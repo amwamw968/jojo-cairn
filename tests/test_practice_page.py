@@ -245,6 +245,26 @@ def test_exam_bar_absent_without_exam(client):
 # ------------------------------------------------------------------ 四态 h1
 
 
+def test_empty_queue_title_is_the_empty_state(client):
+    """练完两道、都还没到期时，页头是空态，不再写「第 2/2 题」。"""
+    c, db = client
+    first = _add_question(db, content="12 + 15 = ?", answer="27")
+    second = _add_question(db, content="3 + 4 = ?", answer="7")
+    for item_id, answer in ((first, "27"), (second, "7")):
+        assert c.post(
+            "/practice/reveal", data={"item_id": str(item_id), "learner_answer": answer}
+        ).status_code == 200
+        assert c.post(
+            "/practice/grade", data={"item_id": str(item_id), "rating": "good"}
+        ).status_code == 200
+
+    html = c.get("/practice").text
+    title = re.search(r'<h1 class="page-title">(.*?)</h1>', html, re.S)
+    assert title is not None
+    assert "今天没有要练的题了" in title.group(1)
+    assert "第 " not in title.group(1)
+
+
 def test_four_modes_keep_the_spec_headlines(client):
     """G2-5 升级：四态 h1 逐字（蓝图 E.8/E.9）：ask=练一题（可带第 x/N 题）/
     reveal=这题怎么样 / similar=同类的题 / graded=这题记下了。"""

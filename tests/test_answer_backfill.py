@@ -295,6 +295,9 @@ def test_detail_page_backfills_answer_and_switches_to_auto_grading(web):
     assert re.search(r"机器判的</span>\s*<span>对", revealed.text)
     assert MANUAL_HINT not in revealed.text
     assert "做对了" not in revealed.text
+    assert _reviews(db, item_id) == []
+    graded = client.post("/practice/grade", data={"item_id": str(item_id), "rating": "good"})
+    assert "判分成功：good" in graded.text
     assert [r.rating for r in _reviews(db, item_id)] == ["good"]
 
 

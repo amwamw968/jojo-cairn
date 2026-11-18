@@ -13,7 +13,8 @@
 {% block content %}
 <div class="page-head">
   <h1 class="page-title">
-    {%- if mode == "ask" %}练一题{% if practice_total is defined and practice_total > 1 %}（第 {{ practice_x }}/{{ practice_total }} 题）{% endif %}
+    {%- if mode == "ask" and not item %}今天没有要练的题了
+    {%- elif mode == "ask" %}练一题{% if practice_total is defined and practice_total > 1 %}（第 {{ practice_x }}/{{ practice_total }} 题）{% endif %}
     {%- elif mode == "reveal" %}这题怎么样
     {%- elif mode == "similar" %}同类的题
     {%- else %}这题记下了{% endif -%}
@@ -76,7 +77,6 @@
   {% endif %}
   {% else %}
   <section class="empty">
-    <h1 class="empty__title">今天没有要练的题了</h1>
     <p class="empty__text">拍一张卷子、圈出错的题，明天开始练。</p>
     <div class="empty__cta"><a class="btn btn--primary" href="/">回今天看看</a></div>
   </section>

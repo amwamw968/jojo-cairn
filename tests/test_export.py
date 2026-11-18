@@ -83,8 +83,8 @@ def test_export_counts_match_db(client):
 
     assert isinstance(document["schema_version"], int)
     datetime.fromisoformat(document["exported_at"])  # 可解析的 ISO 时间
-    # 判题确定性层：reveal 自动判分写一条 good，家长手工 good 再写一条
-    for table, expected in (("question", 1), ("error_item", 1), ("review", 2)):
+    # 揭示只展示判定；评分按钮写唯一的一条 good。
+    for table, expected in (("question", 1), ("error_item", 1), ("review", 1)):
         assert len(document[table]) == _count(db, table), table
         assert len(document[table]) == expected, table
 

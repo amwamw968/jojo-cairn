@@ -1188,11 +1188,13 @@ def create_app(db_url: str | None = None) -> FastAPI:
         with request.app.state.session_factory() as session:
             try:
                 if tools.is_enabled("grading"):
+                    # 判定只用于揭示页展示。评分按钮才写 review，避免一次点击两行。
                     revealed, grade = practice_service.submit_and_judge(
                         session,
                         learner_id,
                         item_id,
                         form.get("learner_answer", ""),
+                        persist=False,
                     )
                 else:
                     # 判题关掉：只揭示、不判定，一律交家长两键（复用 ManualGrade，

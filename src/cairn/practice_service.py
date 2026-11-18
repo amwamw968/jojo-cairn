@@ -564,6 +564,8 @@ def submit_and_judge(
     learner_id: int,
     error_item_id: int,
     learner_answer: str,
+    *,
+    persist: bool = True,
 ) -> tuple[RevealedAnswer, GradeResult | ManualGrade]:
     """练习提交即判分（判题确定性层，LLM 不参与对错判定）。
 
@@ -574,6 +576,8 @@ def submit_and_judge(
 
     判定置信度 >= 0.8：沿用现有评分映射立即写 review（对→good、错→again），
     复用 apply_review 的全部簿记（FSRS 排期、错误计数、状态迁移）。
+    ``persist=False`` 只返回判定，不写 review。练习页还要用户再点一次评分，
+    揭示时不能抢先落账，否则一次评分会变成两行。
     判定置信度 < 0.8：不写 review，把 confidence 压进 0.8 以下，让错题落入
     现有 pending 复核队列（graduation_service.pending_review_queue）交家长确认。
     """
@@ -587,7 +591,7 @@ def submit_and_judge(
     if result.needs_review:
         item.confidence = result.confidence
         session.commit()
-    else:
+    elif persist:
         apply_review(
             session,
             item,

@@ -194,7 +194,7 @@ def test_practice_empty_message(client):
 def test_ac5_grade_updates_state_and_counts_wrong(client):
     c, db = client
     c.post("/entry", data=_entry_form())
-    # 判题确定性层：reveal 时自动判分（七=7 ≠ 八=8 → 错 → 自动写 again review）
+    # 揭示只展示机器判定。评分按钮才写账本，一次点击一行。
     c.post("/practice/reveal", data={"item_id": "1", "learner_answer": "七"})
     graded = c.post("/practice/grade", data={"item_id": "1", "rating": "again"})
     assert graded.status_code == 200
@@ -208,8 +208,28 @@ def test_ac5_grade_updates_state_and_counts_wrong(client):
         reviews, = con.execute("select count(*) from review").fetchone()
     finally:
         con.close()
-    assert wrong_count == 3  # 录入初始 1 + reveal 自动 again +1 + 手工 again +1
-    assert reviews == 2  # reveal 自动判分 1 + 手工判分 1
+    assert wrong_count == 2  # 录入初始 1 + 这一次 again
+    assert reviews == 1
+
+
+def test_one_rating_click_writes_one_review_row(client):
+    """答完再点一次评分：账本只有用户选的那一行，揭示不再抢先写一行。"""
+    c, db = client
+    c.post("/entry", data=_entry_form())
+    revealed = c.post("/practice/reveal", data={"item_id": "1", "learner_answer": "八"})
+    assert revealed.status_code == 200
+    assert "机器判的" in revealed.text
+    graded = c.post("/practice/grade", data={"item_id": "1", "rating": "good"})
+    assert "判分成功：good" in graded.text
+
+    con = sqlite3.connect(db)
+    try:
+        rows = con.execute(
+            "select rating from review order by id"
+        ).fetchall()
+    finally:
+        con.close()
+    assert rows == [("good",)]
 
 
 def test_ac5_grade_rejects_invalid_rating(client):
