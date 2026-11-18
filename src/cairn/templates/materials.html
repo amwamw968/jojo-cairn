@@ -1,0 +1,39 @@
+{% extends "_v3.html" %}
+{% block title %}材料与复核{% endblock %}
+{% block content %}
+<h1 class="page-title">材料与复核</h1>
+<p class="hint--foot">每一页都留在私有库里。已核对才会进入今天的练习。识别文字在核对前都不是标准答案。</p>
+{% if error %}<p class="notice">{{ error }}</p>{% endif %}
+{% if report.files == 0 %}
+<section class="empty">
+  <h1 class="empty__title">还没有导入材料</h1>
+  <p class="empty__text">Jojo 的原始 PDF 和照片还没有进入这个库。合成夹具只有在清单标明 synthetic 时才会出现，并且会写明它不是真实材料。</p>
+</section>
+{% else %}
+<section class="section">
+  <span class="section__title">覆盖</span>
+  <p class="hint--foot">文件 {{ report.files }}，缺文件 {{ report.missing_files }}，拒绝 {{ report.rejected_files }}，页面 {{ report.pages }}。</p>
+  <p class="hint--foot">题目页 {{ report.by_kind.question or 0 }}，答案页 {{ report.by_kind.answer or 0 }}，封面 {{ report.by_kind.cover or 0 }}，空白 {{ report.by_kind.blank or 0 }}，读不清 {{ report.by_kind.unreadable or 0 }}。</p>
+  <p class="hint--foot">已核对题目 {{ report.verified_questions }}。待复核题目 {{ report.review_questions }}。保留了页面图 {{ report.figures_retained }} 页。</p>
+  {% if report.printed_sources %}
+  <p class="hint--foot">页面文字里实际读到的来源：{{ report.printed_sources | join("、") }}。没有读到的名字不会改写成别的机构。</p>
+  {% endif %}
+</section>
+<section class="section">
+  <span class="section__title">文件</span>
+  {% for item in report.files_detail %}
+  <p class="hint--foot">清单：{{ item.label }} · {{ item.role }} · {{ item.status }}{% if item.synthetic %} · 合成夹具，不是 Jojo 的真实材料{% endif %}{% if item.printed_source %} · 页面文字印有{{ item.printed_source }}{% endif %}{% if item.evidence %} · {{ item.evidence }}{% endif %}</p>
+  {% endfor %}
+</section>
+<section class="section">
+  <span class="section__title">页面</span>
+  {% for row in rows %}
+  <p class="hint--foot">第 {{ row.page_number }} 页 · {{ row.kind }}{% if row.verified %} · 已核对{% elif row.review_needed %} · 待复核{% endif %}{% if row.figure %} · 原页图已保留{% endif %} · {{ row.evidence }}</p>
+  {% endfor %}
+</section>
+{% endif %}
+<section class="section">
+  <span class="section__title">导入</span>
+  <p class="hint--foot">批量导入使用本机清单和 operator 凭据。清单里不能写答案。错误清单会被拒绝，不会写入题目。</p>
+</section>
+{% endblock %}

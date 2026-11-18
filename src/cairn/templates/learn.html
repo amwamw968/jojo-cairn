@@ -1,0 +1,19 @@
+{% extends "_v3.html" %}
+{% block title %}练习 · {{ learner_name }}{% endblock %}
+{% block content %}
+<section class="today-head">
+  <h1 class="today-head__title">{{ learner_name }} · {{ grade_label }}</h1>
+  <p class="today-head__sub">这里只练习已经核对过的题。作者端画布不在这个页面里。</p>
+</section>
+<section class="section">
+  <span class="section__title">今天</span>
+  <p class="hint--foot">已核对 {{ verified_count }} 道。未复核 {{ review_count }} 道留在家长的材料页，不会当作已核对作业。</p>
+  <div class="foot-links">
+    <a class="btn btn--primary" href="/practice">开始练习</a>
+    <a class="btn--ghost" href="/review-queue">复习</a>
+  </div>
+</section>
+{% if family %}
+<p class="hint--foot">模型讲解和云端识别已关闭。看不清的原页会标成待复核，不会编造答案。</p>
+{% endif %}
+{% endblock %}
