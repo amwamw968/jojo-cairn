@@ -50,7 +50,12 @@ def test_lazy_import_survives_missing_pyobjc():
     assert result.returncode == 0, result.stderr
     assert "package cairn.capture True" in result.stdout
     assert "available False" in result.stdout
-    assert "pyobjc" in result.stdout
+    # Linux stops at the platform check and never reaches the pyobjc import,
+    # so the unavailable reason names the OS. macOS without pyobjc names pyobjc.
+    if sys.platform == "darwin":
+        assert "pyobjc" in result.stdout
+    else:
+        assert f"非 macOS（{sys.platform}）" in result.stdout
 
 
 def test_is_available_never_raises():
